@@ -21,6 +21,7 @@ class PortfolioApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+        fontFamily: 'Roboto',
       ),
       home: const PortfolioShell(),
     );
@@ -35,23 +36,11 @@ class PortfolioShell extends StatefulWidget {
 }
 
 class _PortfolioShellState extends State<PortfolioShell> {
-  int selectedIndex = 0;
+  int currentPage = 0;
 
-  final pages = const [
-    HomePage(),
-    AboutPage(),
-    ProjectsPage(),
-  ];
-
-  final titles = const [
-    'Home',
-    'About Me',
-    'My Projects',
-  ];
-
-  void goTo(int index) {
+  void goToPage(int page) {
     setState(() {
-      selectedIndex = index;
+      currentPage = page;
     });
   }
 
@@ -61,76 +50,120 @@ class _PortfolioShellState extends State<PortfolioShell> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF4351B2),
         foregroundColor: Colors.white,
+        elevation: 0,
         title: const Text(
           'My Portfolio',
           style: TextStyle(
+            fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
-          if (MediaQuery.of(context).size.width >= 700)
-            ...List.generate(
-              titles.length,
-              (index) => TextButton(
-                onPressed: () => goTo(index),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                ),
-                child: Text(titles[index]),
-              ),
-            )
-          else
+          if (MediaQuery.of(context).size.width >= 650) ...[
+            _navButton('Home', 0),
+            _navButton('About Me', 1),
+            _navButton('My Projects', 2),
+            const SizedBox(width: 18),
+          ] else
             PopupMenuButton<int>(
               icon: const Icon(Icons.menu),
-              onSelected: goTo,
-              itemBuilder: (context) {
-                return List.generate(
-                  titles.length,
-                  (index) => PopupMenuItem(
-                    value: index,
-                    child: Text(titles[index]),
-                  ),
-                );
-              },
+              onSelected: goToPage,
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 0,
+                  child: Text('Home'),
+                ),
+                PopupMenuItem(
+                  value: 1,
+                  child: Text('About Me'),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Text('My Projects'),
+                ),
+              ],
             ),
-          const SizedBox(width: 15),
         ],
       ),
-      body: pages[selectedIndex],
+      body: IndexedStack(
+        index: currentPage,
+        children: [
+          HomePage(
+            onAboutPressed: () => goToPage(1),
+            onProjectsPressed: () => goToPage(2),
+          ),
+          AboutPage(
+            onBackPressed: () => goToPage(0),
+          ),
+          ProjectsPage(
+            onBackPressed: () => goToPage(0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _navButton(String title, int page) {
+    final selected = currentPage == page;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: TextButton(
+        onPressed: () => goToPage(page),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor:
+              selected ? Colors.white.withOpacity(0.18) : Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 }
 
-// ================= HOME PAGE =================
+// ============================================================
+// HOME PAGE
+// ============================================================
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final VoidCallback onAboutPressed;
+  final VoidCallback onProjectsPressed;
+
+  const HomePage({
+    super.key,
+    required this.onAboutPressed,
+    required this.onProjectsPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 50),
+            const SizedBox(height: 45),
 
-            // VV PHOTO
+            // Profile picture / avatar
             Container(
               width: 170,
               height: 170,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF6674D8),
-                    Color(0xFF4351B2),
-                  ],
-                ),
+                color: const Color(0xFF5968D0),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4351B2).withValues(alpha: 0.25),
+                    color: Colors.black.withOpacity(0.15),
                     blurRadius: 25,
                     offset: const Offset(0, 10),
                   ),
@@ -141,37 +174,38 @@ class HomePage extends StatelessWidget {
                   'VV',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 50,
+                    fontSize: 55,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 35),
 
             const Text(
               'VEDA VAISHNAVI',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: Color(0xFF2E3D96),
+                color: Color(0xFF35459F),
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
 
             const Text(
-              'B.Tech 3rd Year CSE',
+              'B.Tech CSE 3rd Year',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 20,
-                color: Color(0xFF555555),
+                color: Colors.black54,
+                fontSize: 23,
               ),
             ),
 
+            
             const SizedBox(height: 50),
           ],
         ),
@@ -180,206 +214,149 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// ================= ABOUT PAGE =================
+// ============================================================
+// ABOUT PAGE
+// ============================================================
 
 class AboutPage extends StatelessWidget {
-  const AboutPage({super.key});
+  final VoidCallback onBackPressed;
 
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 25),
-
-              const Text(
-                'About Me',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2E3D96),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Card(
-                elevation: 0,
-                color: const Color(0xFFEFF1FC),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(30),
-                  child: Text(
-                    'Hello! I am Veda Vaishnavi, a passionate Computer Science '
-                    'Engineering student currently pursuing B.Tech 3rd Year. '
-                    'I enjoy learning new technologies, developing creative '
-                    'applications, and building projects that solve real-world '
-                    'problems. I am interested in software development, web '
-                    'development, programming and user-friendly digital solutions.',
-                    style: TextStyle(
-                      fontSize: 17,
-                      height: 1.7,
-                      color: Color(0xFF3E4250),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              const Text(
-                'Skills & Areas of Expertise',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2E3D96),
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              const Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SkillCard(
-                    icon: Icons.code,
-                    title: 'Python',
-                  ),
-                  SkillCard(
-                    icon: Icons.coffee,
-                    title: 'Java',
-                  ),
-                  SkillCard(
-                    icon: Icons.memory,
-                    title: 'C Programming',
-                  ),
-                
-                  
-                  SkillCard(
-                    icon: Icons.storage,
-                    title: 'SQL',
-                  ),
-                 
-                  SkillCard(
-                    icon: Icons.source,
-                    title: 'Git & GitHub',
-                  ),
-                  SkillCard(
-                    icon: Icons.design_services,
-                    title: 'UI/UX Design',
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 35),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ================= SKILL CARD =================
-
-class SkillCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-
-  const SkillCard({
-    required this.icon,
-    required this.title,
+  const AboutPage({
     super.key,
+    required this.onBackPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 245,
-      child: Card(
-        elevation: 1,
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: const Color(0xFFE8EBFF),
-            foregroundColor: const Color(0xFF4351B2),
-            child: Icon(icon),
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ================= PROJECTS PAGE =================
-
-class ProjectsPage extends StatelessWidget {
-  const ProjectsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(30),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
+          constraints: const BoxConstraints(maxWidth: 900),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 25),
 
-              const Text(
-                'My Projects',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2E3D96),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              ProjectCard(
-                icon: Icons.school,
-                title: 'Student Management System',
-                description:
-                    'A software project designed to manage student details, '
-                    'records and academic information efficiently.',
-                tags: const [
-                  'Java',
-                  'SQL',
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              ProjectCard(
-                icon: Icons.cloud,
-                title: 'Weather Forecast App',
-                description:
-                    'A user-friendly application that displays weather '
-                    'information using real-time data from an API.',
-                tags: const [
-                  'HTML',
-                  'CSS',
-                  'API',
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: onBackPressed,
+                    icon: const Icon(Icons.arrow_back),
+                    iconSize: 30,
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'About Me',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF35459F),
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
                 ],
               ),
 
               const SizedBox(height: 30),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(35),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECEBFA),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Color(0xFF4351B2),
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: 35,
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    const Text(
+                      "Hello! I'm Veda Vaishnavi, a passionate Computer "
+                      "Science Engineering student. I enjoy exploring "
+                      "modern technologies and building creative digital "
+                      "projects that solve real-world problems.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Skills & Areas of Expertise',
+                        style: TextStyle(
+                          color: Color(0xFF4351B2),
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: const [
+                        SkillChip(label: 'Python'),
+                        SkillChip(label: 'Java'),
+                        SkillChip(label: 'C Programming'),
+                        SkillChip(label: 'Data Structures & Algorithms'),
+                        SkillChip(label: 'HTML & CSS'),
+                        SkillChip(label: 'SQL'),
+                        SkillChip(label: 'Flutter & Dart'),
+                        SkillChip(label: 'Git & GitHub'),
+                        SkillChip(label: 'UI/UX Design'),
+                        SkillChip(label: 'Problem Solving'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    ElevatedButton(
+                      onPressed: onBackPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4351B2),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 35,
+                          vertical: 15,
+                        ),
+                      ),
+                      child: const Text(
+                        'Back to Home',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -388,7 +365,151 @@ class ProjectsPage extends StatelessWidget {
   }
 }
 
-// ================= PROJECT CARD =================
+// ============================================================
+// PROJECTS PAGE
+// ============================================================
+
+class ProjectsPage extends StatelessWidget {
+  final VoidCallback onBackPressed;
+
+  const ProjectsPage({
+    super.key,
+    required this.onBackPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(30),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              const SizedBox(height: 25),
+
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: onBackPressed,
+                    icon: const Icon(Icons.arrow_back),
+                    iconSize: 30,
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'My Projects',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF35459F),
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              // PROJECT 1
+              const ProjectCard(
+                icon: Icons.security,
+                title: 'Content Moderation System',
+                description:
+                    'A Python-based intelligent tool for video content '
+                    'filtering and analysis.',
+                tags: [
+                  'Python',
+                  'Content Analysis',
+                  'Video Processing',
+                ],
+              ),
+
+              const SizedBox(height: 22),
+
+              // PROJECT 2
+              const ProjectCard(
+                icon: Icons.image,
+                title: 'Text and Binary Image Steganography',
+                description:
+                    'A Python-based project for hiding and analyzing '
+                    'text and binary data inside images using '
+                    'steganography techniques.',
+                tags: [
+                  'Python',
+                  'Image Processing',
+                  'Steganography',
+                ],
+              ),
+
+              const SizedBox(height: 35),
+
+              ElevatedButton(
+                onPressed: onBackPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4351B2),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 35,
+                    vertical: 15,
+                  ),
+                ),
+                child: const Text(
+                  'Back to Home',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// SKILL CHIP
+// ============================================================
+
+class SkillChip extends StatelessWidget {
+  final String label;
+
+  const SkillChip({
+    super.key,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 17,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.black12,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 15,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PROJECT CARD
+// ============================================================
 
 class ProjectCard extends StatelessWidget {
   final IconData icon;
@@ -397,73 +518,105 @@ class ProjectCard extends StatelessWidget {
   final List<String> tags;
 
   const ProjectCard({
+    super.key,
     required this.icon,
     required this.title,
     required this.description,
     required this.tags,
-    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECEBFA),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: const Color(0xFFE8EBFF),
-              foregroundColor: const Color(0xFF4351B2),
-              child: Icon(
-                icon,
-                size: 28,
-              ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4351B2),
+              borderRadius: BorderRadius.circular(15),
             ),
-
-            const SizedBox(height: 18),
-
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF30439F),
-              ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 30,
             ),
+          ),
 
-            const SizedBox(height: 10),
+          const SizedBox(width: 20),
 
-            Text(
-              description,
-              style: const TextStyle(
-                fontSize: 16,
-                height: 1.55,
-                color: Color(0xFF4C4F5A),
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF35459F),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tags
+                      .map(
+                        (tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.black12,
+                            ),
+                          ),
+                          child: Text(
+                            tag,
+                            style: const TextStyle(
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            Wrap(
-              spacing: 8,
-              children: tags
-                  .map(
-                    (tag) => Chip(
-                      label: Text(tag),
-                      backgroundColor: const Color(0xFFF0F1FA),
-                      side: BorderSide.none,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
